@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результат теста</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Результаты теста</h1>
+
+    <h3>График правильных ответов и ошибок</h3>
+    <canvas id="resultChart"></canvas>
+
+    <script>
+        // Получаем параметры из URL (например, с помощью GET запроса)
+        const urlParams = new URLSearchParams(window.location.search);
+        const correct = parseInt(urlParams.get('correct')) || 0;
+        const errors = parseInt(urlParams.get('errors')) || 0;
+
+        // Настройка графика
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        const resultChart = new Chart(ctx, {
+            type: 'bar',  // Тип графика
+            data: {
+                labels: ['Правильно', 'Ошибки'],  // Метки на оси X
+                datasets: [{
+                    label: 'Количество ответов',
+                    data: [correct, errors],  // Количество правильных и ошибочных ответов
+                    backgroundColor: ['#4caf50', '#f44336'],  // Зеленый для правильных, красный для ошибок
+                    borderColor: ['#4caf50', '#f44336'], 
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: Math.max(correct, errors, 5)  // Устанавливаем максимум оси Y
+                    }
+                }
+            }
+        });
+
+        // Отправляем данные на сервер для сохранения в базе данных
+        const saveResults = () => {
+            const url = `save_results.php?correct=${correct}&errors=${errors}`;
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data); // Выведем ответ от сервера
+                })
+                .catch(error => {
+                    console.log('Ошибка:', error);
+                });
+        };
+
+        // Сохраняем данные после рендеринга графика
+        saveResults();
+    </script>
+</body>
+</html>
